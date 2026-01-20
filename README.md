@@ -12,7 +12,7 @@ This project is an end-to-end real-time AI chatbot that streams responses token-
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **UI Components**: shadcn/ui
-- **AI Integration**: OpenAI API (GPT-3.5-turbo)
+- **AI Integration**: OpenRouter API (openrouter/auto)
 - **Icons**: Lucide React
 - **Date Formatting**: date-fns
 
@@ -39,7 +39,7 @@ This project is an end-to-end real-time AI chatbot that streams responses token-
 
 - [x] **Backend API**
   - [x] Next.js API route at `/app/api/chat/route.ts`
-  - [x] OpenAI GPT-3.5-turbo integration with streaming
+  - [x] OpenRouter with openrouter/auto model integration with streaming
   - [x] API keys secured server-side (not exposed to frontend)
   - [x] Clean streaming logic using ReadableStream
   - [x] Graceful error handling
@@ -61,7 +61,7 @@ This project is an end-to-end real-time AI chatbot that streams responses token-
 ### Prerequisites
 
 - Node.js 18+ installed
-- OpenAI API key ([Get one here](https://platform.openai.com/api-keys))
+- Any OPENROUTER API key ([Get one here](https://platform.openai.com/api-keys))
 
 ### Installation
 
@@ -81,10 +81,10 @@ This project is an end-to-end real-time AI chatbot that streams responses token-
    cp .env.example .env.local
    ```
 
-   Edit `.env.local` and add your OpenAI API key:
+   Edit `.env.local` and add your OPENROUTER API key:
 
    ```
-   OPENAI_API_KEY=sk-your-actual-openai-api-key-here
+   OPENROUTER_API_KEY=sk-your-actual-openrouter-api-key-here
    ```
 
 4. **Run the development server**
@@ -101,7 +101,7 @@ This project is an end-to-end real-time AI chatbot that streams responses token-
 
 | Variable         | Description                                  | Required |
 | ---------------- | -------------------------------------------- | -------- |
-| `OPENAI_API_KEY` | Your OpenAI API key for accessing GPT models | Yes      |
+| `OPENROUTER_API_KEY` | Your OpenRouter API key for accessing models | Yes      |
 
 ## Commands
 
@@ -141,7 +141,7 @@ components/
 types/
  └─ chat.ts                  # TypeScript type definitions
 lib/
- └─ openai.ts                # OpenAI client configuration
+ └─ openrouter.ts                # OpenRouter client configuration
 ```
 
 ## How It Works
@@ -180,7 +180,7 @@ MIT
 
 ## Notes
 
-- The application uses GPT-3.5-turbo by default for cost-effectiveness
-- You can modify the model in `lib/openai.ts` to use GPT-4 or other models
-- Rate limits and costs depend on your OpenAI plan
+- The application uses openrouter/auto by default for cost-effectiveness
+- You can modify the model in `lib/openrouter.ts` to use openrouter/auto or other models
+- Rate limits and costs depend on your OpenRouter plan
 - All API calls are made server-side to protect your API key
