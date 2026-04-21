@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { Bot, User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
 interface MessageBubbleProps {
   message: Message;
@@ -41,24 +42,29 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
               ) : (
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw]}
                   components={{
                     p: ({ children }) => (
-                      <p className="mb-2 last:mb-0 break-words">{children}</p>
+                      <p className="mb-2 last:mb-0 break-words whitespace-pre-line">{children}</p>
                     ),
                     h1: ({ children }) => (
-                      <h1 className="text-lg font-bold mb-2">{children}</h1>
+                      <h1 className="text-lg font-bold mb-3 mt-2">{children}</h1>
                     ),
                     h2: ({ children }) => (
-                      <h2 className="text-base font-bold mb-2">{children}</h2>
+                      <h2 className="text-base font-bold mb-3 mt-2">{children}</h2>
                     ),
                     h3: ({ children }) => (
-                      <h3 className="text-sm font-bold mb-2">{children}</h3>
+                      <h3 className="text-sm font-bold mb-2 mt-2">{children}</h3>
                     ),
+                    h4: ({ children }) => (
+                      <h4 className="text-xs font-bold mb-2 mt-2">{children}</h4>
+                    ),
+                    hr: () => <hr className="my-3 border-t border-current opacity-30" />,
                     ul: ({ children }) => (
-                      <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>
+                      <ul className="list-disc list-inside mb-2 space-y-1 ml-2">{children}</ul>
                     ),
                     ol: ({ children }) => (
-                      <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>
+                      <ol className="list-decimal list-inside mb-2 space-y-1 ml-2">{children}</ol>
                     ),
                     li: ({ children }) => <li className="break-words">{children}</li>,
                     strong: ({ children }) => (
@@ -71,14 +77,46 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                       </code>
                     ),
                     pre: ({ children }) => (
-                      <pre className="bg-opacity-20 p-2 rounded mb-2 overflow-x-auto">
+                      <pre className="bg-opacity-20 p-3 rounded mb-2 overflow-x-auto text-xs">
                         {children}
                       </pre>
                     ),
                     blockquote: ({ children }) => (
-                      <blockquote className="border-l-2 pl-3 italic opacity-75 mb-2">
+                      <blockquote className="border-l-2 pl-3 italic opacity-75 mb-2 my-2">
                         {children}
                       </blockquote>
+                    ),
+                    table: ({ children }) => (
+                      <div className="overflow-x-auto mb-4">
+                        <table className="w-full border-collapse border border-current border-opacity-30 text-xs">
+                          {children}
+                        </table>
+                      </div>
+                    ),
+                    thead: ({ children }) => (
+                      <thead className="bg-opacity-20 font-bold">
+                        {children}
+                      </thead>
+                    ),
+                    tbody: ({ children }) => (
+                      <tbody>
+                        {children}
+                      </tbody>
+                    ),
+                    tr: ({ children }) => (
+                      <tr className="border-b border-current border-opacity-20">
+                        {children}
+                      </tr>
+                    ),
+                    td: ({ children }) => (
+                      <td className="px-3 py-2 border-r border-current border-opacity-20 last:border-r-0">
+                        {children}
+                      </td>
+                    ),
+                    th: ({ children }) => (
+                      <th className="px-3 py-2 border-r border-current border-opacity-30 last:border-r-0 text-left font-bold">
+                        {children}
+                      </th>
                     ),
                   }}
                 >
