@@ -9,7 +9,8 @@ import ChatInput from "./ChatInput";
 import TypingIndicator from "./TypingIndicator";
 import ConnectionStatus from "./ConnectionStatus";
 import PersonaSelector from "./PersonaSelector";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function ChatWindow() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -18,16 +19,28 @@ export default function ChatWindow() {
   const [streamingContent, setStreamingContent] = useState("");
   const [selectedPersona, setSelectedPersona] = useState<Persona>(DEFAULT_PERSONA);
   const [customPersonas, setCustomPersonas] = useState<Persona[]>([]);
+  const [isUserScrolled, setIsUserScrolled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleScroll = () => {
+    if (!messagesContainerRef.current) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+    setIsUserScrolled(!isAtBottom);
+  };
+
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, streamingContent]);
+    if (!isUserScrolled) {
+      scrollToBottom();
+    }
+  }, [messages, streamingContent, isUserScrolled]);
 
   const handleAddCustomPersona = (personaData: Omit<Persona, "id" | "user_id" | "created_at" | "updated_at">) => {
     const newPersona: Persona = {
@@ -45,6 +58,15 @@ export default function ChatWindow() {
     setCustomPersonas((prev) => prev.filter((p) => p.id !== id));
     if (selectedPersona.id === id) {
       setSelectedPersona(DEFAULT_PERSONA);
+    }
+  };
+
+  const handleStopStream = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setIsStreaming(false);
+      setStreamingContent("");
+      setConnectionStatus("connected");
     }
   };
 
@@ -168,7 +190,11 @@ export default function ChatWindow() {
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div
+        className="flex-1 overflow-y-auto px-4 py-6 relative"
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+      >
         <div className="max-w-4xl mx-auto">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
@@ -218,9 +244,27 @@ export default function ChatWindow() {
 
           <div ref={messagesEndRef} />
         </div>
+
+        {isUserScrolled && (
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+            <Button
+              onClick={scrollToBottom}
+              size="sm"
+              className="rounded-full shadow-lg"
+            >
+              <ChevronDown className="w-4 h-4 mr-1" />
+              Scroll to Bottom
+            </Button>
+          </div>
+        )}
       </div>
 
-      <ChatInput onSend={handleSendMessage} disabled={isStreaming} />
+      <ChatInput
+        onSend={handleSendMessage}
+        disabled={isStreaming}
+        onStop={handleStopStream}
+        isStreaming={isStreaming}
+      />
     </div>
   );
 }
