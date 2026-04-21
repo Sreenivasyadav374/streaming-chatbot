@@ -2,10 +2,13 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Message, ConnectionStatus as Status } from "@/types/chat";
+import { Persona } from "@/types/persona";
+import { DEFAULT_PERSONA } from "@/lib/personas";
 import MessageBubble from "./MessageBubble";
 import ChatInput from "./ChatInput";
 import TypingIndicator from "./TypingIndicator";
 import ConnectionStatus from "./ConnectionStatus";
+import PersonaSelector from "./PersonaSelector";
 import { MessageSquare } from "lucide-react";
 
 export default function ChatWindow() {
@@ -13,6 +16,8 @@ export default function ChatWindow() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<Status>("connected");
   const [streamingContent, setStreamingContent] = useState("");
+  const [selectedPersona, setSelectedPersona] = useState<Persona>(DEFAULT_PERSONA);
+  const [customPersonas, setCustomPersonas] = useState<Persona[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -23,6 +28,25 @@ export default function ChatWindow() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, streamingContent]);
+
+  const handleAddCustomPersona = (personaData: Omit<Persona, "id" | "user_id" | "created_at" | "updated_at">) => {
+    const newPersona: Persona = {
+      ...personaData,
+      id: `custom-${Date.now()}`,
+      user_id: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    setCustomPersonas((prev) => [...prev, newPersona]);
+    setSelectedPersona(newPersona);
+  };
+
+  const handleDeleteCustomPersona = (id: string) => {
+    setCustomPersonas((prev) => prev.filter((p) => p.id !== id));
+    if (selectedPersona.id === id) {
+      setSelectedPersona(DEFAULT_PERSONA);
+    }
+  };
 
   const handleSendMessage = async (content: string) => {
     const userMessage: Message = {
@@ -50,6 +74,7 @@ export default function ChatWindow() {
             role: msg.role,
             content: msg.content,
           })),
+          systemPrompt: selectedPersona.system_prompt,
         }),
         signal: abortControllerRef.current.signal,
       });
@@ -127,11 +152,20 @@ export default function ChatWindow() {
           <div>
             <h1 className="text-lg font-semibold">AI Chat Assistant</h1>
             <p className="text-xs text-muted-foreground">
-              Real-time streaming responses
+              {selectedPersona.name} - Real-time streaming
             </p>
           </div>
         </div>
-        <ConnectionStatus status={connectionStatus} />
+        <div className="flex items-center space-x-4">
+          <PersonaSelector
+            selectedPersona={selectedPersona}
+            onSelectPersona={setSelectedPersona}
+            customPersonas={customPersonas}
+            onAddCustomPersona={handleAddCustomPersona}
+            onDeleteCustomPersona={handleDeleteCustomPersona}
+          />
+          <ConnectionStatus status={connectionStatus} />
+        </div>
       </header>
 
       <div className="flex-1 overflow-y-auto px-4 py-6">

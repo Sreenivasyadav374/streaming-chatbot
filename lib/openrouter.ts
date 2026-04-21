@@ -2,7 +2,7 @@ import OpenAI from "openai";
 
 // Use OpenRouter’s OpenAI‑compatible base URL
 export const openrouter = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY!,
+  apiKey: process.env.OPENROUTER_API_KEY || "dummy-key-for-build",
   baseURL: "https://openrouter.ai/api/v1",
 });
 

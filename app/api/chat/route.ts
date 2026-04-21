@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { messages } = await req.json();
+    const { messages, systemPrompt } = await req.json();
     if (!Array.isArray(messages)) {
       return NextResponse.json(
         { error: "Messages array is required" },
@@ -20,10 +20,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Prepare messages with system prompt if provided
+    const messagesWithSystem = systemPrompt
+      ? [{ role: "system", content: systemPrompt }, ...messages]
+      : messages;
+
     // Create the streaming completion
     const stream = await openrouter.chat.completions.create({
       model: CHAT_MODEL,
-      messages,
+      messages: messagesWithSystem,
       stream: true,
     });
 
