@@ -34,7 +34,7 @@ Rules:
           description:
             "Get current weather for a specific city. Always provide the city name in the location parameter.",
 
-          parameters: z.object({
+          inputSchema: z.object({
             location: z.string().describe("The city name to get weather for"),
           }),
 
@@ -48,7 +48,7 @@ Rules:
         showTasks: tool({
           description:
             "Create task title and check list of tasks for specific context.",
-          parameters: z.object({
+          inputSchema: z.object({
             title: z.string().describe("The name to create for the task list"),
             tasks: z
               .array(
