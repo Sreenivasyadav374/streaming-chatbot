@@ -3,6 +3,7 @@
 import { streamText, tool, convertToModelMessages } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { z } from "zod";
+import { allTools } from "./tools";
 
 const googleProvider = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
@@ -30,43 +31,8 @@ Rules:
 `,
 
       tools: {
-        showWeather: tool({
-          description:
-            "Get current weather for a specific city. Always provide the city name in the location parameter.",
-
-          inputSchema: z.object({
-            location: z.string().describe("The city name to get weather for"),
-          }),
-
-          execute: async ({ location }) => {
-            return {
-              city: location,
-              temperature: "32",
-            };
-          },
-        }),
-        showTasks: tool({
-          description:
-            "Create task title and check list of tasks for specific context.",
-          inputSchema: z.object({
-            title: z.string().describe("The name to create for the task list"),
-            tasks: z
-              .array(
-                z.object({
-                  id: z.string().describe("Unique random string id"),
-                  text: z.string().describe("The task description"),
-                  completed: z
-                    .boolean()
-                    .default(false)
-                    .describe("Set false by default"),
-                }),
-              )
-              .describe("The list of tasks"),
-          }),
-          execute: async ({ title, tasks }) => {
-            return { title, tasks };
-          },
-        }),
+        showWeather: allTools.showWeather,
+        showTasks: allTools.showTasks,
       },
     });
 
