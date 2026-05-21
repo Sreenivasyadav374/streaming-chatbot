@@ -162,7 +162,7 @@ export default function ChatWindow() {
                       : "rounded-bl-md border-zinc-200 bg-white"
                   }`}
                 >
-                  {message.parts.map((part:any, index) => {
+                  {message.parts.map((part: any, index) => {
                     // =========================
                     // TEXT PART
                     // =========================
@@ -316,8 +316,29 @@ export default function ChatWindow() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-zinc-200 bg-white/80 px-5 py-5 backdrop-blur-xl">
-          <div className="mx-auto flex w-full max-w-3xl items-end gap-3">
+        <div className="border-t border-zinc-200 bg-white/80 px-5 py-3 backdrop-blur-xl">
+          <div className="mx-auto flex w-full max-w-3xl items-center gap-3">
+            {/* 1. Flex container for Image Input & Preview */}
+            <div className="flex items-center gap-2">
+              <label className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-zinc-200 bg-zinc-50 text-zinc-500 transition-all hover:bg-zinc-100 hover:text-black">
+                {/* Replace with an upload/plus icon if you have one */}
+                <span className="text-xl font-medium">+</span>
+                <input type="file" onChange={handleChange} className="hidden" />
+              </label>
+
+              {/* Mini floating preview instead of giant card block */}
+              {previewUrl && (
+                <div className="relative group h-10 w-10 shrink-0">
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="h-full w-full rounded-xl border border-zinc-200 object-cover"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* 2. Textarea Base (Reduced height & padded) */}
             <div className="relative flex-1">
               <textarea
                 rows={1}
@@ -331,26 +352,15 @@ export default function ChatWindow() {
                   }
                 }}
                 placeholder="Ask something..."
-                className="max-h-40 min-h-[56px] w-full resize-none rounded-3xl border border-zinc-200 bg-zinc-50 px-5 py-4 pr-14 text-sm text-zinc-800 outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-300 focus:bg-white focus:ring-4 focus:ring-zinc-100"
+                className="max-h-32 min-h-[44px] w-full resize-none rounded-2xl border border-zinc-200 bg-zinc-50 py-3 pl-4 pr-12 text-sm text-zinc-800 outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-300 focus:bg-white focus:ring-4 focus:ring-zinc-100"
               />
 
-              <div className="App">
-                <h2>Add Image:</h2>
-                <input type="file" onChange={handleChange} />
-                {previewUrl && (
-                  <img
-                    src={previewUrl}
-                    alt="Uploaded preview"
-                    className="mt-3 max-h-40 rounded-2xl border border-zinc-200 object-cover"
-                  />
-                )}
-              </div>
-
-              <div className="absolute bottom-2 right-2 flex items-center gap-2">
+              {/* 3. Action Buttons docked inside the right side of the textarea */}
+              <div className="absolute top-1/2 right-1.5 -translate-y-1/2">
                 {status === "streaming" ? (
                   <button
                     onClick={stop}
-                    className="flex h-10 items-center justify-center rounded-full bg-red-500 px-4 text-sm font-medium text-white transition-all hover:bg-red-600"
+                    className="flex h-8 items-center justify-center rounded-full bg-red-500 px-3 text-xs font-medium text-white transition-all hover:bg-red-600"
                   >
                     Stop
                   </button>
@@ -358,19 +368,19 @@ export default function ChatWindow() {
                   <button
                     onClick={handleSend}
                     disabled={status !== "ready" || !input.trim()}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white transition-all hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-white transition-all hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <SendHorizonal size={16} />
+                    <SendHorizonal size={14} />
                   </button>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="mx-auto mt-3 flex w-full max-w-3xl items-center justify-between px-1">
-            <p className="text-xs text-zinc-400">Press Enter to send</p>
-
-            <p className="text-xs text-zinc-400">
+          {/* Micro metadata footer */}
+          <div className="mx-auto mt-2 flex w-full max-w-3xl items-center justify-between px-1">
+            <p className="text-[11px] text-zinc-400">Press Enter to send</p>
+            <p className="text-[11px] text-zinc-400">
               Real-time AI streaming enabled
             </p>
           </div>
