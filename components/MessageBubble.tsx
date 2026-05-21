@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { Bot, User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw';
+// import rehypeRaw from 'rehype-raw';
 
 interface MessageBubbleProps {
   message: Message;
@@ -42,7 +42,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
               ) : (
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeRaw]}
+                  // rehypePlugins={[rehypeRaw]}
                   components={{
                     p: ({ children }) => (
                       <p className="mb-2 last:mb-0 break-words whitespace-pre-line">{children}</p>

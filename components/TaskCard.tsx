@@ -7,11 +7,7 @@ type Props = { title: string; tasks: Task[] }
 export const schemaOfTasks = z.object({
   title: z.string().describe("The name to create for the task list"),
   tasks: z.array(
-    z.object({
-      id: z.string(), // Added to match your JSX map key
-      text: z.string(),
-      completed: z.boolean() // Added to match your conditional rendering
-    })
+    z.string()
   ).describe("The list of tasks")
 });
 
@@ -28,11 +24,11 @@ export function TaskCard({ title = 'Plan', tasks = [] }: TaskCardProps) {
       </div>
       <ul className="space-y-3">
         {tasks.map((task) => (
-          <li key={task.id} className="flex items-center gap-3">
+          <li key={task} className="flex items-center gap-3">
             <div className={`w-5 h-5 flex items-center justify-center text-xs`}>
                 ●
             </div>
-            <span className={`text-sm ${task.completed ? 'line-through text-zinc-500' : 'text-zinc-300'}`}>
+            <span className={`text-sm 'text-zinc-300'}`}>
               {task}
             </span>
           </li>
