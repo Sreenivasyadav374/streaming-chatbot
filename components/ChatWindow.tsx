@@ -162,7 +162,7 @@ export default function ChatWindow() {
                       : "rounded-bl-md border-zinc-200 bg-white"
                   }`}
                 >
-                  {message.parts.map((part, index) => {
+                  {message.parts.map((part:any, index) => {
                     // =========================
                     // TEXT PART
                     // =========================
