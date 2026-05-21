@@ -1,192 +1,381 @@
+// components/ChatWindow.tsx
+
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Message, ConnectionStatus as Status } from "@/types/chat";
-import MessageBubble from "./MessageBubble";
-import ChatInput from "./ChatInput";
-import TypingIndicator from "./TypingIndicator";
-import ConnectionStatus from "./ConnectionStatus";
-import { MessageSquare } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { SendHorizonal, Sparkles } from "lucide-react";
+import { WeatherCard } from "./WeatherCard";
+
+import { useChat } from "@ai-sdk/react";
+
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import type { FileUIPart } from "ai";
+import { TaskCard } from "./TaskCard";
 
 export default function ChatWindow() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<Status>("connected");
-  const [streamingContent, setStreamingContent] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const [input, setInput] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const { messages, sendMessage, status } = useChat();
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, streamingContent]);
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages, status]);
 
-  const handleSendMessage = async (content: string) => {
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content,
-      timestamp: new Date(),
-    };
+  async function handleSend() {
+    if (!input.trim() && !selectedFile) return;
 
-    setMessages((prev) => [...prev, userMessage]);
-    setIsStreaming(true);
-    setConnectionStatus("streaming");
-    setStreamingContent("");
+    let filePart: FileUIPart[] | undefined = undefined;
 
-    abortControllerRef.current = new AbortController();
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [...messages, userMessage].map((msg) => ({
-            role: msg.role,
-            content: msg.content,
-          })),
-        }),
-        signal: abortControllerRef.current.signal,
+    if (selectedFile) {
+      // Convert the File object to a Base64 Data URL
+      const base64String = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(selectedFile);
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-
-      if (!reader) {
-        throw new Error("Response body is not readable");
-      }
-
-      let accumulatedContent = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n");
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const data = line.slice(6);
-
-            if (data === "[DONE]") continue;
-
-            // Append text directly
-            accumulatedContent += data;
-            setStreamingContent(accumulatedContent);
-          }
-        }
-      }
-
-      if (accumulatedContent) {
-        const assistantMessage: Message = {
-          id: Date.now().toString(),
-          role: "assistant",
-          content: accumulatedContent,
-          timestamp: new Date(),
-        };
-
-        setMessages((prev) => [...prev, assistantMessage]);
-      }
-
-      setStreamingContent("");
-      setConnectionStatus("connected");
-    } catch (error: any) {
-      if (error.name === "AbortError") {
-        console.log("Request aborted");
-      } else {
-        console.error("Error sending message:", error);
-        setConnectionStatus("error");
-
-        setTimeout(() => {
-          setConnectionStatus("connected");
-        }, 3000);
-      }
-    } finally {
-      setIsStreaming(false);
-      abortControllerRef.current = null;
+      filePart = [
+        {
+          type: "file",
+          mediaType: selectedFile.type,
+          filename: selectedFile.name,
+          url: base64String, // This is now a Data URL the backend can read
+        },
+      ];
     }
-  };
+    setInput("");
+    setSelectedFile(null);
+    setPreviewUrl(null);
+
+    await sendMessage({
+      text: input,
+      files: filePart,
+    });
+  }
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setSelectedFile(file);
+
+    const preview = URL.createObjectURL(file);
+
+    setPreviewUrl(preview);
+  }
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      <header className="border-b bg-card px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <MessageSquare className="w-6 h-6 text-primary-foreground" />
+    <div className="flex h-screen w-full items-center justify-center bg-gradient-to-b from-zinc-100 via-white to-zinc-100 p-4">
+      <div className="relative flex h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white/80 shadow-[0_10px_60px_rgba(0,0,0,0.08)] backdrop-blur-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-black text-white shadow-lg">
+              <Sparkles size={18} />
+            </div>
+
+            <div>
+              <h1 className="text-sm font-semibold text-zinc-900">
+                Generative UI Assistant
+              </h1>
+
+              <p className="text-xs text-zinc-500">AI-powered streaming chat</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-semibold">AI Chat Assistant</h1>
-            <p className="text-xs text-muted-foreground">
-              Real-time streaming responses
+
+          <div className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs text-zinc-500 shadow-sm">
+            {status === "streaming" || status === "submitted"
+              ? "Thinking..."
+              : "Online"}
+          </div>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto px-5 py-6">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
+            {messages.length === 0 && (
+              <div className="mt-24 flex flex-col items-center justify-center text-center">
+                <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-[28px] bg-black text-white shadow-xl">
+                  <Sparkles size={34} />
+                </div>
+
+                <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">
+                  Your AI Workspace
+                </h2>
+
+                <p className="mt-3 max-w-md text-sm leading-6 text-zinc-500">
+                  Ask about frontend, React, UI, performance, or AI concepts.
+                </p>
+
+                <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+                  {[
+                    {
+                      label: "🌤️ Check Weather in Tokyo",
+                      prompt: "What is the weather like in Tokyo right now?",
+                    },
+                    {
+                      label: "📋 Create Coding Checklist",
+                      prompt:
+                        "Create a checklist of 5 essential coding technologies",
+                    },
+                    { label: "Build login UI", prompt: "Build login UI" },
+                    {
+                      label: "React performance tips",
+                      prompt: "React performance tips",
+                    },
+                  ].map((suggestion) => (
+                    <button
+                      key={suggestion.label}
+                      onClick={() => setInput(suggestion.prompt)}
+                      className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-600 transition-all hover:border-zinc-300 hover:bg-zinc-50 hover:text-black"
+                    >
+                      {suggestion.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Messages */}
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={
+                  message.role === "user"
+                    ? "flex justify-end"
+                    : "flex justify-start"
+                }
+              >
+                <div
+                  className={`max-w-[80%] space-y-4 rounded-[24px] border px-5 py-4 shadow-sm ${
+                    message.role === "user"
+                      ? "rounded-br-md border-zinc-200 bg-black text-white"
+                      : "rounded-bl-md border-zinc-200 bg-white"
+                  }`}
+                >
+                  {message.parts.map((part, index) => {
+                    // =========================
+                    // TEXT PART
+                    // =========================
+                    if (part.type === "text") {
+                      return (
+                        <div
+                          key={index}
+                          className={`prose max-w-none text-sm leading-7 ${
+                            message.role === "user"
+                              ? "prose-invert"
+                              : "prose-zinc"
+                          }`}
+                        >
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              code(props) {
+                                const { children } = props;
+
+                                return (
+                                  <code
+                                    className={`rounded-md px-1.5 py-1 text-[13px] ${
+                                      message.role === "user"
+                                        ? "bg-white/10 text-white"
+                                        : "bg-zinc-100 text-zinc-800"
+                                    }`}
+                                  >
+                                    {children}
+                                  </code>
+                                );
+                              },
+
+                              pre(props) {
+                                return (
+                                  <pre className="overflow-x-auto rounded-xl bg-zinc-950 p-4 text-sm text-zinc-100">
+                                    {props.children}
+                                  </pre>
+                                );
+                              },
+
+                              h1(props) {
+                                return (
+                                  <h1 className="mb-4 text-2xl font-bold">
+                                    {props.children}
+                                  </h1>
+                                );
+                              },
+
+                              h2(props) {
+                                return (
+                                  <h2 className="mb-3 mt-6 text-xl font-semibold">
+                                    {props.children}
+                                  </h2>
+                                );
+                              },
+
+                              ul(props) {
+                                return (
+                                  <ul className="list-disc space-y-2 pl-5">
+                                    {props.children}
+                                  </ul>
+                                );
+                              },
+
+                              ol(props) {
+                                return (
+                                  <ol className="list-decimal space-y-2 pl-5">
+                                    {props.children}
+                                  </ol>
+                                );
+                              },
+
+                              p(props) {
+                                return <p className="mb-3">{props.children}</p>;
+                              },
+
+                              strong(props) {
+                                return (
+                                  <strong className="font-semibold">
+                                    {props.children}
+                                  </strong>
+                                );
+                              },
+                            }}
+                          >
+                            {part.text}
+                          </ReactMarkdown>
+                        </div>
+                      );
+                    }
+
+                    // =========================
+                    // WEATHER TOOL PART
+                    // =========================
+                    if (
+                      part.type === "tool-showWeather" &&
+                      part.state === "output-available"
+                    ) {
+                      return (
+                        <WeatherCard
+                          key={index}
+                          city={part.output.city}
+                          temperature={part.output.temperature}
+                        />
+                      );
+                    }
+                    if (
+                      part.type === "tool-showTasks" &&
+                      part.state === "output-available"
+                    ) {
+                      return (
+                        <TaskCard
+                          key={index}
+                          title={part.output.title}
+                          tasks={part.output.tasks}
+                        />
+                      );
+                    }
+                    if (part.type === "file") {
+                      return (
+                        <img
+                          key={index}
+                          src={part.url}
+                          alt={part.filename ?? "uploaded image"}
+                          className="max-w-sm rounded-2xl border border-zinc-200"
+                        />
+                      );
+                    }
+
+                    return null;
+                  })}
+                </div>
+              </div>
+            ))}
+
+            {/* Skeleton While Waiting */}
+            {status === "submitted" && (
+              <div className="flex justify-start">
+                <div className="max-w-[80%] rounded-[24px] rounded-bl-md border border-zinc-200 bg-white px-5 py-4 shadow-sm">
+                  <div className="flex w-64 flex-col gap-2 py-1">
+                    <div className="h-4 w-full animate-pulse rounded bg-zinc-200" />
+                    <div className="h-4 w-[90%] animate-pulse rounded bg-zinc-200" />
+                    <div className="h-4 w-[65%] animate-pulse rounded bg-zinc-200" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+
+        {/* Input */}
+        <div className="border-t border-zinc-200 bg-white/80 px-5 py-5 backdrop-blur-xl">
+          <div className="mx-auto flex w-full max-w-3xl items-end gap-3">
+            <div className="relative flex-1">
+              <textarea
+                rows={1}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={status !== "ready"}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder="Ask something..."
+                className="max-h-40 min-h-[56px] w-full resize-none rounded-3xl border border-zinc-200 bg-zinc-50 px-5 py-4 pr-14 text-sm text-zinc-800 outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-300 focus:bg-white focus:ring-4 focus:ring-zinc-100"
+              />
+
+              <div className="App">
+                <h2>Add Image:</h2>
+                <input type="file" onChange={handleChange} />
+                {previewUrl && (
+                  <img
+                    src={previewUrl}
+                    alt="Uploaded preview"
+                    className="mt-3 max-h-40 rounded-2xl border border-zinc-200 object-cover"
+                  />
+                )}
+              </div>
+
+              <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                {status === "streaming" ? (
+                  <button
+                    onClick={stop}
+                    className="flex h-10 items-center justify-center rounded-full bg-red-500 px-4 text-sm font-medium text-white transition-all hover:bg-red-600"
+                  >
+                    Stop
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSend}
+                    disabled={status !== "ready" || !input.trim()}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white transition-all hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <SendHorizonal size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="mx-auto mt-3 flex w-full max-w-3xl items-center justify-between px-1">
+            <p className="text-xs text-zinc-400">Press Enter to send</p>
+
+            <p className="text-xs text-zinc-400">
+              Real-time AI streaming enabled
             </p>
           </div>
         </div>
-        <ConnectionStatus status={connectionStatus} />
-      </header>
-
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="max-w-4xl mx-auto">
-          {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full text-center py-12">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <MessageSquare className="w-8 h-8 text-primary" />
-              </div>
-              <h2 className="text-xl font-semibold mb-2">
-                Start a conversation
-              </h2>
-              <p className="text-muted-foreground max-w-md">
-                Ask me anything! I&apos;ll respond with streaming answers in
-                real-time.
-              </p>
-            </div>
-          )}
-
-          {messages.map((message) => (
-            <MessageBubble key={message.id} message={message} />
-          ))}
-
-          {isStreaming && streamingContent && (
-            <div className="flex justify-start mb-4">
-              <div className="flex flex-row items-end space-x-2 max-w-[80%] md:max-w-[70%]">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-secondary text-secondary-foreground mr-2">
-                  <MessageSquare className="w-4 h-4" />
-                </div>
-                <div className="px-4 py-3 rounded-2xl bg-secondary text-secondary-foreground rounded-bl-none">
-                  <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-                    {streamingContent}
-                    <span className="inline-block w-1 h-4 bg-current ml-1 animate-pulse" />
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {isStreaming && !streamingContent && (
-            <div className="flex justify-start mb-4">
-              <div className="flex flex-row items-end space-x-2">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-secondary text-secondary-foreground mr-2">
-                  <MessageSquare className="w-4 h-4" />
-                </div>
-                <TypingIndicator />
-              </div>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
       </div>
-
-      <ChatInput onSend={handleSendMessage} disabled={isStreaming} />
     </div>
   );
 }

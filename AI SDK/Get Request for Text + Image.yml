@@ -1,0 +1,44 @@
+info:
+  name: "Get Request for Text + Image "
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:3000/api/chat
+  headers:
+    - name: Accept
+      value: text/event-stream
+    - name: Content-Type
+      value: application/json
+    - name: Cache-Control
+      value: no-cache
+  body:
+    type: json
+    data: |-
+      {
+        "messages": [
+          {
+            "id": "mock-msg-1",
+            "role": "user",
+            "parts": [
+              {
+                "type": "text",
+                "text": "What is this image"
+              },
+                      {
+                "type": "file",
+                "mediaType": "image/png",
+                "url": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ_Zuz3haRHrSz0f3bnMlUTGa14Qc7Z5LLQ3-l04P98hv9CMXQU"
+              }
+            ]
+          }
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
