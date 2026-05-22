@@ -1,0 +1,48 @@
+"use client";
+
+import { WorkspaceLoader } from "./WorkspaceLoader";
+import { ChatHeader } from "./ChatHeader";
+import { EmptyState } from "./EmptyState";
+import { MessageList } from "./MessageList";
+import { ChatInput } from "./ChatInput";
+import { useChatWindow } from "@/hooks/useChatWindow";
+
+export default function ChatWindow() {
+  const chat = useChatWindow();
+
+  if (!chat.isHydrated) {
+    return <WorkspaceLoader />;
+  }
+
+  return (
+    <div className="flex h-screen w-full items-center justify-center bg-gradient-to-b from-zinc-100 via-white to-zinc-100 p-4">
+      <div className="relative flex h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[32px] border border-zinc-200 bg-white/80 shadow-[0_10px_60px_rgba(0,0,0,0.08)] backdrop-blur-xl">
+        <ChatHeader status={chat.status} />
+
+        <div className="flex-1 overflow-y-auto px-5 py-6">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
+            {chat.messages.length === 0 && (
+              <EmptyState setInput={chat.setInput} />
+            )}
+
+            <MessageList
+              messages={chat.messages}
+              status={chat.status}
+              messagesEndRef={chat.messagesEndRef}
+            />
+          </div>
+        </div>
+
+        <ChatInput
+          input={chat.input}
+          setInput={chat.setInput}
+          previewUrl={chat.previewUrl}
+          status={chat.status}
+          stop={chat.stop}
+          handleSend={chat.handleSend}
+          handleChange={chat.handleChange}
+        />
+      </div>
+    </div>
+  );
+}

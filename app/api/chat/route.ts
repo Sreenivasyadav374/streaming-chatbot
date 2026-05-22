@@ -21,18 +21,19 @@ export async function POST(req: Request) {
       messages: await convertToModelMessages(messages),
 
       system: `
-You are an AI assistant with access to tools.
+You are an AI assistant with access to specialized UI rendering tools.
 
 Rules:
-- For weather-related questions ALWAYS use the showWeather tool.
+- For weather-related questions, ALWAYS use the showWeather tool.
 - For generating lists, plans, or checklists, ALWAYS use the showTasks tool.
-- CRITICAL: When using the showTasks tool, you must explicitly invent or extract an array of items for the 'tasks' array and a string for the 'title'. Do not leave the arguments empty.
-- For all other questions respond normally in markdown.
+- For generating culinary recipes, food preparation steps, or meal plans, ALWAYS use the createRecipe tool. CRITICAL: Provide all structural details matching the schema parameters perfectly. Do not output raw markdown for recipes.
+- For all other standard questions, respond normally in markdown.
 `,
 
       tools: {
         showWeather: allTools.showWeather,
         showTasks: allTools.showTasks,
+        showRecipe: allTools.showRecipe,
       },
     });
 
