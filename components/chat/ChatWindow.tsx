@@ -1,3 +1,4 @@
+// components/ChatWindow.tsx
 "use client";
 
 import { WorkspaceLoader } from "./WorkspaceLoader";
@@ -7,8 +8,18 @@ import { MessageList } from "./MessageList";
 import { ChatInput } from "./ChatInput";
 import { useChatWindow } from "@/hooks/useChatWindow";
 
-export default function ChatWindow() {
-  const chat = useChatWindow();
+// Update the interface to accept dynamic inputs from the Server Router
+interface ChatWindowProps {
+  chatId: string;
+  initialMessages: any[];
+}
+
+export default function ChatWindow({
+  chatId,
+  initialMessages,
+}: ChatWindowProps) {
+  // Pass them cleanly into your custom state hook controller
+  const chat = useChatWindow({ chatId, initialMessages });
 
   if (!chat.isHydrated) {
     return <WorkspaceLoader />;
