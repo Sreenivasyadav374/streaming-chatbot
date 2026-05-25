@@ -23,9 +23,8 @@ export function useChatWindow({ chatId, initialMessages }: UseChatWindowProps) {
     initialMessages,
     body: { chatId }, // Passes the chatId parameter cleanly on every execution request
     onFinish: () => {
-      // When the assistant finishes speaking, tell Next.js to check for database updates
-      // This will catch the new title Gemini generated and refresh your sidebar instantly!
       router.refresh();
+      window.dispatchEvent(new Event("chat-title-updated"));
     },
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);

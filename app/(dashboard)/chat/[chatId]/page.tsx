@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ChatWindow from "@/components/chat/ChatWindow";
 
+export const dynamic = "force-dynamic";
+
 export default async function ChatPage({
   params,
 }: {
