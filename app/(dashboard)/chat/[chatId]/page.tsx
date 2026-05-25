@@ -55,7 +55,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
     .from("messages")
     .select("id, role, content, created_at")
     .eq("chat_id", chatId)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: false });
 
   if (messagesError) {
     console.error("Error loading chat history matrix:", messagesError);
