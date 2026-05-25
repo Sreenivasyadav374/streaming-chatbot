@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     const { error: userMsgError } = await supabase.from("messages").insert({
       chat_id: chatId,
       role: latestMessage.role,
-      content: JSON.stringify(dbContentText), // Safely stringified to keep JSONB column parsing happy
+      content: dbContentText, // Safely stringified to keep JSONB column parsing happy
     });
 
     if (userMsgError) {

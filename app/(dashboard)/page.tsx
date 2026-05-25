@@ -9,13 +9,25 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: newChat } = await supabase
+  const { data: newChat, error } = await supabase
     .from("chats")
     .insert([{ user_id: user.id, title: "New Chat Session" }])
-    .select()
+    .select("id") // Explicitly demand just the ID string back
     .single();
 
-  if (newChat) {
+  if (error || !newChat?.id) {
+    console.error("❌ Failed to initialize fresh database row profile:", error);
+
+    // Fallback: Render a safe client-action state instead of redirecting to a broken string
+    return (
+      <div className="p-8 text-red-500 font-medium">
+        Database generation pipeline stalled. Please verify table connections.
+      </div>
+    );
+  }
+
+  // Double-verify that the variable is a valid string before executing
+  if (newChat && newChat.id) {
     redirect(`/chat/${newChat.id}`);
   }
 
