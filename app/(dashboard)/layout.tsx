@@ -2,7 +2,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { NewChatButton } from "@/components/chat/NewChatButton"; // <-- Import here
+import { NewChatButton } from "@/components/chat/NewChatButton";
+import { SidebarChatList } from "@/components/chat/SidebarChatList"; // <-- Import here
+
+// Break the static generation cache to ensure layout state revalidation works smoothly
+export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({
   children,
@@ -28,21 +32,12 @@ export default async function DashboardLayout({
             Workspace Chatbot
           </div>
 
-          {/* REPLACE OLD LINK WITH THIS CLEAN NEW BUTTON INTERACTION */}
           <NewChatButton />
 
-          <nav className="flex flex-col gap-1 overflow-y-auto max-h-[70vh] mt-2">
-            {chats?.map((chat) => (
-              <Link
-                key={chat.id}
-                href={`/chat/${chat.id}`}
-                className="truncate px-3 py-2.5 rounded-xl text-sm text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100 transition-colors block"
-              >
-                {chat.title}
-              </Link>
-            ))}
-          </nav>
+          {/* INSTANT CLIENT SYNC MENU REPLACES OLD HARDCODED LOOP */}
+          <SidebarChatList initialChats={chats || []} />
         </div>
+
         <div className="flex flex-col gap-1 border-t border-zinc-900 pt-3">
           <div className="truncate text-sm font-medium text-zinc-300">
             {user.email?.split("@")[0]}
@@ -50,6 +45,7 @@ export default async function DashboardLayout({
           <div className="truncate text-xs text-zinc-500">{user.email}</div>
         </div>
       </aside>
+
       <main className="flex-1 relative flex flex-col overflow-hidden bg-zinc-50">
         {children}
       </main>
