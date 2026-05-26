@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { NewChatButton } from "@/components/chat/NewChatButton";
 import { SidebarChatList } from "@/components/chat/SidebarChatList"; // <-- Import here
+import { SignOutButton } from "@/components/auth/SignOutButton";
 
 // Break the static generation cache to ensure layout state revalidation works smoothly
 export const dynamic = "force-dynamic";
@@ -43,6 +44,9 @@ export default async function DashboardLayout({
             {user.email?.split("@")[0]}
           </div>
           <div className="truncate text-xs text-zinc-500">{user.email}</div>
+        </div>
+        <div className="border-t border-zinc-100 pt-4">
+          <SignOutButton />
         </div>
       </aside>
 
