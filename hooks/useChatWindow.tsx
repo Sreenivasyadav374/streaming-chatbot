@@ -1,9 +1,14 @@
 // hooks/useChatWindow.ts
 import { useEffect, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import type { FileUIPart } from "ai";
+import type { UIMessage, FileUIPart } from "ai";
+import { useRouter } from "next/navigation";
+interface UseChatWindowProps {
+  chatId: string;
+  initialMessages: UIMessage[];
+}
 
-export function useChatWindow() {
+export function useChatWindow({ chatId, initialMessages }: UseChatWindowProps) {
   const [input, setInput] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -11,7 +16,17 @@ export function useChatWindow() {
   const [isHydrated, setIsHydrated] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
 
-  const { messages, sendMessage, status, stop } = useChat();
+  const router = useRouter();
+
+  const { messages, setMessages, sendMessage, status, stop } = useChat({
+    id: chatId,
+    messages: initialMessages,
+    onFinish: () => {
+      router.refresh();
+      window.dispatchEvent(new Event("chat-title-updated"));
+    },
+  });
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,14 +74,20 @@ export function useChatWindow() {
       ];
     }
 
+    const currentInput = input;
     setInput("");
     setSelectedFile(null);
     setPreviewUrl(null);
 
-    await sendMessage({
-      text: input,
-      files: filePart,
-    });
+    await sendMessage(
+      {
+        text: currentInput,
+        files: filePart,
+      },
+      {
+        body: { chatId },
+      },
+    );
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {

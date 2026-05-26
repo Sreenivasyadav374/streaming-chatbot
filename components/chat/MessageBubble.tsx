@@ -1,6 +1,15 @@
 import { MessagePartRenderer } from "./MessagePartRenderer";
 
 export function MessageBubble({ message }: any) {
+  // OPTIMAL FALLBACK: If the SDK or DB yields flat 'content' instead of structured 'parts',
+  // wrap the content string dynamically into a virtual text part format so your renderer functions perfectly!
+  const structuralParts = message.parts || [
+    {
+      type: "text",
+      text: message.content || "",
+    },
+  ];
+
   return (
     <div
       className={
@@ -14,7 +23,7 @@ export function MessageBubble({ message }: any) {
             : "rounded-bl-md border-zinc-200 bg-white"
         }`}
       >
-        {message.parts.map((part: any, index: number) => (
+        {structuralParts.map((part: any, index: number) => (
           <MessagePartRenderer key={index} part={part} role={message.role} />
         ))}
       </div>
