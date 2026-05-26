@@ -18,10 +18,9 @@ export function useChatWindow({ chatId, initialMessages }: UseChatWindowProps) {
 
   const router = useRouter();
 
-const { messages, setMessages, sendMessage, status, stop } = useChat({
+  const { messages, setMessages, sendMessage, status, stop } = useChat({
     id: chatId,
-    messages: initialMessages, // Valid property matching UIMessage[] array configuration
-    body: { chatId },
+    messages: initialMessages,
     onFinish: () => {
       router.refresh();
       window.dispatchEvent(new Event("chat-title-updated"));
