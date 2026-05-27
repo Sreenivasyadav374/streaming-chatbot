@@ -1,6 +1,7 @@
 // app/(dashboard)/page.tsx
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -12,7 +13,7 @@ export default async function HomePage() {
   const { data: newChat, error } = await supabase
     .from("chats")
     .insert([{ user_id: user.id, title: "New Chat Session" }])
-    .select("id") // Explicitly demand just the ID string back
+    .select("id")
     .single();
 
   if (error || !newChat?.id) {
@@ -26,7 +27,6 @@ export default async function HomePage() {
     );
   }
 
-  // Double-verify that the variable is a valid string before executing
   if (newChat && newChat.id) {
     redirect(`/chat/${newChat.id}`);
   }
