@@ -13,10 +13,8 @@ interface ChatState {
   chats: Chat[];
   isLoading: boolean;
 
-  // Synchronizes server-fetched data into local memory on initial load
   setChats: (chats: Chat[]) => void;
 
-  // Placeholder stub for the optimistic deletion mutation background loop
   deleteChat: (chatId: string) => Promise<void>;
 }
 
@@ -26,7 +24,6 @@ export const useChatStore = create<ChatState>((set) => ({
   isLoading: false,
 
   setChats: (chats) => {
-    console.log("📥 Hydrating Zustand store with initial server chats:", chats);
     set({ chats });
   },
 

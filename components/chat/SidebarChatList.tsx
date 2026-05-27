@@ -1,45 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { SidebarChatItem } from "./SidebarChatItem";
-
-interface Chat {
-  id: string;
-  title: string;
-  updated_at: string;
-}
+import { useChatStore, Chat } from "@/store/useChatStore";
 
 export function SidebarChatList({ initialChats }: { initialChats: Chat[] }) {
-  const [chats, setChats] = useState<Chat[]>(initialChats);
   const params = useParams();
   const currentChatId = params?.chatId as string;
 
-  // Keep client state completely in sync when server components revalidate
+  const chats = useChatStore((state) => state.chats);
+  const setChats = useChatStore((state) => state.setChats);
+
   useEffect(() => {
     if (initialChats) {
       setChats(initialChats);
     }
-  }, [initialChats]);
+  }, [initialChats, setChats]);
 
-  // Intercept the global custom event to append the new chat row instantly
   useEffect(() => {
     const handleOptimisticChat = (
       e: CustomEvent<{ id: string; title: string }>,
     ) => {
       const { id, title } = e.detail;
 
-      setChats((prev) => {
-        // Prevent duplicate appends if it's already rendered
-        if (prev.some((chat) => chat.id === id)) return prev;
+      const currentChats = useChatStore.getState().chats;
 
-        const placeholderChat: Chat = {
-          id,
-          title,
-          updated_at: new Date().toISOString(),
-        };
-        return [placeholderChat, ...prev];
-      });
+      if (currentChats.some((chat) => chat.id === id)) return;
+
+      const placeholderChat: Chat = {
+        id,
+        title,
+        user_id: "", // Fallback empty string if user_id isn't instantly available in layout context
+      };
+
+      setChats([placeholderChat, ...currentChats]);
     };
 
     window.addEventListener(
@@ -51,7 +46,7 @@ export function SidebarChatList({ initialChats }: { initialChats: Chat[] }) {
         "create-optimistic-chat" as any,
         handleOptimisticChat,
       );
-  }, []);
+  }, [setChats]);
 
   return (
     <nav className="flex flex-col space-y-1 px-2 py-4">
