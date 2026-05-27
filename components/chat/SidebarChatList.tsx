@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
+import { SidebarChatItem } from "./SidebarChatItem";
 
 interface Chat {
   id: string;
@@ -13,7 +13,7 @@ interface Chat {
 export function SidebarChatList({ initialChats }: { initialChats: Chat[] }) {
   const [chats, setChats] = useState<Chat[]>(initialChats);
   const params = useParams();
-  const currentChatId = params?.id as string;
+  const currentChatId = params?.chatId as string;
 
   // Keep client state completely in sync when server components revalidate
   useEffect(() => {
@@ -54,23 +54,25 @@ export function SidebarChatList({ initialChats }: { initialChats: Chat[] }) {
   }, []);
 
   return (
-    <nav className="flex flex-col gap-1 overflow-y-auto max-h-[70vh] mt-2">
-      {chats.map((chat) => {
-        const isActive = currentChatId === chat.id;
-        return (
-          <Link
-            key={chat.id}
-            href={`/chat/${chat.id}`}
-            className={`truncate px-3 py-2.5 rounded-xl text-sm transition-colors block ${
-              isActive
-                ? "bg-zinc-900 text-zinc-100 font-medium"
-                : "text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-100"
-            }`}
-          >
-            {chat.title}
-          </Link>
-        );
-      })}
+    <nav className="flex flex-col space-y-1 px-2 py-4">
+      <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        Recent Conversations
+      </div>
+
+      {chats.map((chat) => (
+        <SidebarChatItem
+          key={chat.id}
+          chatId={chat.id}
+          title={chat.title}
+          isActive={chat.id === currentChatId}
+        />
+      ))}
+
+      {chats.length === 0 && (
+        <div className="px-3 py-2 text-xs italic text-zinc-400">
+          No active rooms found.
+        </div>
+      )}
     </nav>
   );
 }
