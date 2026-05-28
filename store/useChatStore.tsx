@@ -1,6 +1,6 @@
 import { create } from "zustand";
+import { createClient } from "@/lib/supabase/client"; // Ensure you import your client-side Supabase initializer
 
-// 1. Define the core Chat object shape matching your Supabase schema
 export interface Chat {
   id: string;
   title: string;
@@ -8,18 +8,17 @@ export interface Chat {
   created_at?: string;
 }
 
-// 2. Define the TypeScript interface for your global store state and actions
 interface ChatState {
   chats: Chat[];
   isLoading: boolean;
-
   setChats: (chats: Chat[]) => void;
-
   deleteChat: (chatId: string) => Promise<void>;
 }
 
-// 3. Initialize the global store hook with empty stub actions
-export const useChatStore = create<ChatState>((set) => ({
+// Initialize the client-side Supabase wrapper
+const supabase = createClient();
+
+export const useChatStore = create<ChatState>((set, get) => ({
   chats: [],
   isLoading: false,
 
@@ -28,12 +27,35 @@ export const useChatStore = create<ChatState>((set) => ({
   },
 
   deleteChat: async (chatId) => {
-    console.log(
-      "🚀 Stub action: Intending to optimistically delete chat ID:",
-      chatId,
-    );
-    // This action is currently stubbed out for Sub-Task 1.
-    // It will be fully implemented with error-handling rollbacks in Sub-Task 3.
-    return Promise.resolve();
+    // 1. Snapshot the current state before making any changes (for backup)
+    const previousChats = get().chats;
+
+    // 2. 🚀 OPTIMISTIC UPDATE: Instantly slice the chat out of client memory
+    set({
+      chats: previousChats.filter((chat) => chat.id !== chatId),
+    });
+
+    try {
+      // throw new Error("Simulated Network Drop");
+      // 3. Trigger the network deletion query to Supabase in the background
+      const { error } = await supabase.from("chats").delete().eq("id", chatId);
+
+      if (error) throw error;
+
+      console.log(
+        `✅ Successfully synced deletion for chat ${chatId} with Supabase.`,
+      );
+    } catch (err) {
+      console.error(
+        "❌ Background deletion failed! Initiating state rollback:",
+        err,
+      );
+
+      // 4. 🔄 ROLLBACK MECHANISM: Snap back to the previous snapshot if server fails
+      set({ chats: previousChats });
+
+      // Throw the error forward so the UI layer can display a toast notification or alert if needed
+      throw err;
+    }
   },
 }));

@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.78",
@@ -82,5 +84,8 @@
     "vaul": "^0.9.9",
     "zod": "^3.25.76",
     "zustand": "^5.0.13"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.7"
   }
 }
