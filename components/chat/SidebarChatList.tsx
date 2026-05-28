@@ -19,11 +19,31 @@ export function SidebarChatList({ initialChats }: { initialChats: Chat[] }) {
   }, [initialChats, setChats]);
 
   useEffect(() => {
+    if (!currentChatId) return;
+
+    const isAlreadyInServerPayload = initialChats?.some(
+      (chat) => chat.id === currentChatId,
+    );
+    if (isAlreadyInServerPayload) return;
+
+    const chatExistsInStore = chats.some((chat) => chat.id === currentChatId);
+
+    if (!chatExistsInStore) {
+      const fallbackPlaceholderChat: Chat = {
+        id: currentChatId,
+        title: "New Chat Session",
+        user_id: "",
+      };
+
+      setChats([fallbackPlaceholderChat, ...(initialChats || [])]);
+    }
+  }, [currentChatId, initialChats, setChats]);
+
+  useEffect(() => {
     const handleOptimisticChat = (
       e: CustomEvent<{ id: string; title: string }>,
     ) => {
       const { id, title } = e.detail;
-
       const currentChats = useChatStore.getState().chats;
 
       if (currentChats.some((chat) => chat.id === id)) return;
@@ -31,7 +51,7 @@ export function SidebarChatList({ initialChats }: { initialChats: Chat[] }) {
       const placeholderChat: Chat = {
         id,
         title,
-        user_id: "", // Fallback empty string if user_id isn't instantly available in layout context
+        user_id: "",
       };
 
       setChats([placeholderChat, ...currentChats]);
