@@ -64,7 +64,6 @@ export function SidebarChatItem({
         {title || "New Conversation"}
       </span>
 
-      {/* AC #1: Embedded contextual trash action button display */}
       <button
         onClick={handleDelete}
         disabled={isDeleting}

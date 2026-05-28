@@ -18,6 +18,7 @@ export function SidebarChatList({ initialChats }: { initialChats: Chat[] }) {
     }
   }, [initialChats, setChats]);
 
+  // Modify for the zustand store integration
   useEffect(() => {
     if (!currentChatId) return;
 
