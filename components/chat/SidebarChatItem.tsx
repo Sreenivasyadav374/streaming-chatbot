@@ -34,11 +34,10 @@ export function SidebarChatItem({
     try {
       setIsDeleting(true);
 
+      await deleteChat(chatId);
       if (isActive) {
         router.push("/");
       }
-
-      await deleteChat(chatId);
 
       router.refresh();
     } catch (err) {
