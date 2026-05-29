@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client"; // Your client utility utility route
+import { useChatStore } from "@/store/useChatStore";
 
 interface SidebarChatItemProps {
   chatId: string;
@@ -17,8 +17,8 @@ export function SidebarChatItem({
   isActive,
 }: SidebarChatItemProps) {
   const router = useRouter();
-  const supabase = createClient();
   const [isDeleting, setIsDeleting] = useState(false);
+  const deleteChat = useChatStore((state) => state.deleteChat);
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -34,18 +34,17 @@ export function SidebarChatItem({
     try {
       setIsDeleting(true);
 
-      const { error } = await supabase.from("chats").delete().eq("id", chatId);
-
-      if (error) throw error;
-
+      await deleteChat(chatId);
       if (isActive) {
-        window.location.href = "/";
-      } else {
-        router.refresh();
+        router.push("/");
       }
+
+      router.refresh();
     } catch (err) {
       console.error("❌ Failed to purge chat thread workspace:", err);
-      alert("Could not delete chat. Please try again.");
+      alert(
+        "Could not sync deletion across tables. Connection timed out—restoring chat thread.",
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -64,7 +63,6 @@ export function SidebarChatItem({
         {title || "New Conversation"}
       </span>
 
-      {/* AC #1: Embedded contextual trash action button display */}
       <button
         onClick={handleDelete}
         disabled={isDeleting}
