@@ -19,11 +19,11 @@ export function MobileSidebarDrawer({
 }: MobileSidebarDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Close drawer on route change (when a chat item is clicked)
+  // Close drawer when a chat item is selected on mobile
   useEffect(() => {
-    const handleRouteChange = () => setIsOpen(false);
-    window.addEventListener("popstate", handleRouteChange);
-    return () => window.removeEventListener("popstate", handleRouteChange);
+    const handleClose = () => setIsOpen(false);
+    window.addEventListener("close-mobile-drawer", handleClose);
+    return () => window.removeEventListener("close-mobile-drawer", handleClose);
   }, []);
 
   // Prevent body scroll when drawer is open

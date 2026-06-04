@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "AI Chat Assistant",
   description:
     "A real-time AI chatbot with streaming responses built using Next.js and WebSockets.",
+  icons: { icon: "/favicon.ico" },
   openGraph: {
     title: "AI Chat Assistant",
     description: "Real-time AI chatbot with live streaming responses.",

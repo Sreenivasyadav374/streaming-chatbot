@@ -50,9 +50,16 @@ export function SidebarChatItem({
     }
   };
 
+  const handleLinkClick = () => {
+    if (window.innerWidth < 768) {
+      window.dispatchEvent(new CustomEvent("close-mobile-drawer"));
+    }
+  };
+
   return (
     <Link
       href={`/chat/${chatId}`}
+      onClick={handleLinkClick}
       className={`group flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
         isActive
           ? "bg-zinc-900 text-white shadow-sm"
