@@ -17,7 +17,7 @@ export function MessageBubble({ message }: any) {
       }
     >
       <div
-        className={`max-w-[80%] space-y-4 rounded-[24px] border px-5 py-4 shadow-sm ${
+        className={`max-w-[90%] sm:max-w-[80%] space-y-4 rounded-2xl sm:rounded-[24px] border px-3 sm:px-5 py-3 sm:py-4 shadow-sm min-w-0 overflow-hidden ${
           message.role === "user"
             ? "rounded-br-md border-zinc-200 bg-black text-white"
             : "rounded-bl-md border-zinc-200 bg-white"

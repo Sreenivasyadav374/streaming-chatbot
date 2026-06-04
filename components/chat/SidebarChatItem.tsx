@@ -66,7 +66,7 @@ export function SidebarChatItem({
       <button
         onClick={handleDelete}
         disabled={isDeleting}
-        className={`rounded-md p-1 transition-all hover:bg-zinc-200 hover:text-red-600 group-hover:opacity-100 md:opacity-0 ${
+        className={`rounded-md p-1 transition-all hover:bg-zinc-200 hover:text-red-600 opacity-100 md:opacity-0 group-hover:opacity-100 ${
           isActive
             ? "hover:bg-zinc-800 text-zinc-400 hover:text-red-400"
             : "text-zinc-400"

@@ -1,4 +1,4 @@
-import { SendHorizonal } from "lucide-react";
+import { SendHorizontal as SendHorizonal } from "lucide-react";
 
 interface ChatInputProps {
   input: string;
@@ -20,18 +20,18 @@ export function ChatInput({
   handleChange,
 }: ChatInputProps) {
   return (
-    <div className="border-t border-zinc-200 bg-white/80 px-5 py-3 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-3xl items-center gap-3">
+    <div className="border-t border-zinc-200 bg-white/80 px-3 py-2 sm:px-5 sm:py-3 backdrop-blur-xl">
+      <div className="mx-auto flex w-full max-w-3xl items-center gap-2 sm:gap-3">
         {/* Upload + Preview */}
-        <div className="flex items-center gap-2">
-          <label className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-zinc-200 bg-zinc-50 text-zinc-500 transition-all hover:bg-zinc-100 hover:text-black">
+        <div className="flex items-center gap-2 shrink-0">
+          <label className="flex h-9 w-9 sm:h-10 sm:w-10 cursor-pointer items-center justify-center rounded-full border border-zinc-200 bg-zinc-50 text-zinc-500 transition-all hover:bg-zinc-100 hover:text-black">
             <span className="text-xl font-medium">+</span>
 
             <input type="file" onChange={handleChange} className="hidden" />
           </label>
 
           {previewUrl && (
-            <div className="relative h-10 w-10 shrink-0">
+            <div className="relative h-9 w-9 sm:h-10 sm:w-10 shrink-0">
               <img
                 src={previewUrl}
                 alt="Preview"
@@ -42,7 +42,7 @@ export function ChatInput({
         </div>
 
         {/* Textarea */}
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-0">
           <textarea
             rows={1}
             value={input}
@@ -55,7 +55,7 @@ export function ChatInput({
               }
             }}
             placeholder="Ask something..."
-            className="max-h-32 min-h-[44px] w-full resize-none rounded-2xl border border-zinc-200 bg-zinc-50 py-3 pl-4 pr-12 text-sm text-zinc-800 outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-300 focus:bg-white focus:ring-4 focus:ring-zinc-100"
+            className="max-h-32 min-h-[40px] sm:min-h-[44px] w-full resize-none rounded-2xl border border-zinc-200 bg-zinc-50 py-2.5 sm:py-3 pl-3 sm:pl-4 pr-12 text-sm text-zinc-800 outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-300 focus:bg-white focus:ring-4 focus:ring-zinc-100"
           />
 
           {/* Actions */}
@@ -63,7 +63,7 @@ export function ChatInput({
             {status === "streaming" ? (
               <button
                 onClick={stop}
-                className="flex h-8 items-center justify-center rounded-full bg-red-500 px-3 text-xs font-medium text-white transition-all hover:bg-red-600"
+                className="flex h-7 sm:h-8 items-center justify-center rounded-full bg-red-500 px-2.5 sm:px-3 text-xs font-medium text-white transition-all hover:bg-red-600"
               >
                 Stop
               </button>
@@ -71,9 +71,9 @@ export function ChatInput({
               <button
                 onClick={handleSend}
                 disabled={status !== "ready" || !input.trim()}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-white transition-all hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-black text-white transition-all hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <SendHorizonal size={14} />
+                <SendHorizonal size={13} />
               </button>
             )}
           </div>
@@ -81,10 +81,10 @@ export function ChatInput({
       </div>
 
       {/* Footer */}
-      <div className="mx-auto mt-2 flex w-full max-w-3xl items-center justify-between px-1">
-        <p className="text-[11px] text-zinc-400">Press Enter to send</p>
+      <div className="mx-auto mt-1.5 sm:mt-2 flex w-full max-w-3xl items-center justify-between px-1">
+        <p className="text-[10px] sm:text-[11px] text-zinc-400">Press Enter to send</p>
 
-        <p className="text-[11px] text-zinc-400">
+        <p className="text-[10px] sm:text-[11px] text-zinc-400 hidden sm:block">
           Real-time AI streaming enabled
         </p>
       </div>

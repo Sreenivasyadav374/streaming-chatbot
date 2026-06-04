@@ -25,25 +25,26 @@ interface EmptyStateProps {
 
 export function EmptyState({ setInput }: EmptyStateProps) {
   return (
-    <div className="mt-24 flex flex-col items-center justify-center text-center">
-      <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-[28px] bg-black text-white shadow-xl">
-        <Sparkles size={34} />
+    <div className="mt-10 sm:mt-24 flex flex-col items-center justify-center text-center px-2">
+      <div className="mb-4 sm:mb-5 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-[20px] sm:rounded-[28px] bg-black text-white shadow-xl">
+        <Sparkles size={28} className="sm:hidden" />
+        <Sparkles size={34} className="hidden sm:block" />
       </div>
 
-      <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">
+      <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
         Your AI Workspace
       </h2>
 
-      <p className="mt-3 max-w-md text-sm leading-6 text-zinc-500">
+      <p className="mt-2 sm:mt-3 max-w-md text-sm leading-6 text-zinc-500">
         Ask about frontend, React, UI, performance, or AI concepts.
       </p>
 
-      <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+      <div className="mt-6 sm:mt-10 flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full max-w-sm sm:max-w-none">
         {suggestions.map((suggestion) => (
           <button
             key={suggestion.label}
             onClick={() => setInput(suggestion.prompt)}
-            className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-600 transition-all hover:border-zinc-300 hover:bg-zinc-50 hover:text-black"
+            className="rounded-full border border-zinc-200 bg-white px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-zinc-600 transition-all hover:border-zinc-300 hover:bg-zinc-50 hover:text-black"
           >
             {suggestion.label}
           </button>

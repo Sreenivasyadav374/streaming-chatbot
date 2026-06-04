@@ -4,13 +4,13 @@ import type { RecipeData } from "@/app/api/chat/schema";
 
 export function RecipeCard({ recipe }: { recipe: Partial<RecipeData> }) {
   return (
-    <div className="w-full max-w-2xl rounded-2xl border border-orange-100 bg-orange-50/30 p-6 shadow-sm backdrop-blur-md">
-      <h2 className="text-2xl font-bold text-zinc-900">
+    <div className="w-full max-w-full rounded-2xl border border-orange-100 bg-orange-50/30 p-4 sm:p-6 shadow-sm backdrop-blur-md">
+      <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 break-words">
         {recipe.title || "Crafting Recipe..."}
       </h2>
       <p className="mt-1 text-sm text-zinc-500 italic">{recipe.description}</p>
 
-      <div className="mt-4 flex gap-4 text-xs text-zinc-600">
+      <div className="mt-4 flex flex-wrap gap-3 text-xs text-zinc-600">
         {recipe.prepTime && <span>⏳ Prep: {recipe.prepTime}</span>}
         {recipe.cookTime && <span>🍳 Cook: {recipe.cookTime}</span>}
         {recipe.servings && <span>🍽️ Servings: {recipe.servings}</span>}
