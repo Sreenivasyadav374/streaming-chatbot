@@ -29,7 +29,7 @@ export default async function DashboardLayout({
   const userDisplayName = userEmail.split("@")[0];
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-zinc-50 font-sans">
+    <div className="flex h-screen [height:100dvh] w-full overflow-hidden bg-zinc-50 font-sans">
       {/* Desktop sidebar — hidden on mobile, visible on md+ */}
       <aside className="hidden md:flex w-64 shrink-0 border-r border-zinc-200 bg-zinc-950 p-4 flex-col justify-between text-white select-none">
         <div className="flex flex-col gap-4">
@@ -61,7 +61,7 @@ export default async function DashboardLayout({
         userDisplayName={userDisplayName}
       />
 
-      <main className="flex-1 relative flex flex-col overflow-hidden bg-zinc-50 md:pt-0 pt-[52px] min-w-0">
+      <main className="flex-1 flex flex-col overflow-hidden bg-zinc-50 md:pt-0 pt-[52px] min-w-0 min-h-0">
         {children}
       </main>
     </div>

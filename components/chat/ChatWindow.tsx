@@ -26,11 +26,11 @@ export default function ChatWindow({
   }
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-gradient-to-b from-zinc-100 via-white to-zinc-100 p-2 sm:p-4">
-      <div className="relative flex h-full w-full max-w-4xl flex-col overflow-hidden rounded-2xl sm:rounded-[32px] border border-zinc-200 bg-white/80 shadow-[0_10px_60px_rgba(0,0,0,0.08)] backdrop-blur-xl">
+    <div className="flex h-full w-full items-stretch justify-center bg-gradient-to-b from-zinc-100 via-white to-zinc-100 sm:p-4 sm:items-center">
+      <div className="relative flex h-full w-full max-w-4xl flex-col overflow-hidden sm:rounded-[32px] sm:border border-zinc-200 bg-white/80 sm:shadow-[0_10px_60px_rgba(0,0,0,0.08)] sm:backdrop-blur-xl">
         <ChatHeader status={chat.status} />
 
-        <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-6">
+        <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-6 min-h-0">
           <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 sm:gap-5">
             {chat.messages.length === 0 && (
               <EmptyState setInput={chat.setInput} />
