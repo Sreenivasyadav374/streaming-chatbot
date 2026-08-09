@@ -1,0 +1,450 @@
+openapi: 3.1.0
+info:
+  title: AI Chat Assistant API
+  description: |
+    A production-ready AI chatbot API with streaming responses, authentication,
+    chat persistence, and AI tool calling capabilities.
+
+    ## Authentication
+
+    All endpoints require authentication via Supabase session cookies.
+    Include the session token in your requests.
+
+    ## Streaming
+
+    The `/api/chat` endpoint uses Server-Sent Events (SSE) for real-time
+    streaming responses. Each event contains a JSON payload with type
+    and data fields.
+
+  version: 1.0.0
+  contact:
+    name: AI Chat Assistant Team
+    url: https://github.com/your-org/ai-chat-assistant
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://your-production-url.com
+    description: Production server
+
+tags:
+  - name: Chat
+    description: Chat operations
+  - name: Authentication
+    description: Authentication operations
+
+paths:
+  /api/chat:
+    post:
+      tags:
+        - Chat
+      summary: Send chat message
+      description: |
+        Send a message to the AI assistant and receive a streaming response.
+
+        The response uses Server-Sent Events (SSE) format with the following event types:
+        - `text-delta`: Text chunk being streamed
+        - `tool-call`: AI tool invocation
+        - `finish`: Stream completion
+
+        On the first message of a conversation, an AI-generated title is
+        automatically created and stored.
+      operationId: sendMessage
+      security:
+        - session: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+            examples:
+              simple:
+                summary: Simple message
+                value:
+                  chatId: "550e8400-e29b-41d4-a716-446655440000"
+                  messages:
+                    - role: user
+                      content: "What's the weather in Tokyo?"
+              withFile:
+                summary: Message with file attachment
+                value:
+                  chatId: "550e8400-e29b-41d4-a716-446655440000"
+                  messages:
+                    - role: user
+                      content: "Analyze this image"
+                      files:
+                        - type: file
+                          mediaType: "image/png"
+                          filename: "screenshot.png"
+                          url: "data:image/png;base64,..."
+      responses:
+        '200':
+          description: Successful streaming response
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: Server-Sent Events stream
+              examples:
+                stream:
+                  summary: Example SSE stream
+                  value: |
+                    data: {"type":"text-delta","textDelta":"Hello"}
+                    data: {"type":"text-delta","textDelta":"!"}
+                    data: {"type":"finish"}
+        '400':
+          description: Bad request - Missing chatId
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Missing chatId parameter"
+        '401':
+          description: Unauthorized - Invalid or missing session
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Unauthorized"
+        '500':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Something went wrong"
+
+  /api/chat/update-title:
+    post:
+      tags:
+        - Chat
+      summary: Update chat title
+      description: Update the title of a specific chat session
+      operationId: updateChatTitle
+      security:
+        - session: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTitleRequest'
+            example:
+              chatId: "550e8400-e29b-41d4-a716-446655440000"
+              title: "My New Chat Title"
+      responses:
+        '200':
+          description: Title updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Bad request - Missing parameters
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Missing parameters"
+        '401':
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /api/auth/callback:
+    get:
+      tags:
+        - Authentication
+      summary: OAuth callback handler
+      description: |
+        Handles OAuth callbacks from Supabase authentication.
+        Exchanges the authorization code for a session and redirects.
+      operationId: authCallback
+      parameters:
+        - name: code
+          in: query
+          required: true
+          description: OAuth authorization code
+          schema:
+            type: string
+        - name: next
+          in: query
+          required: false
+          description: Redirect path after successful authentication
+          schema:
+            type: string
+            default: "/"
+      responses:
+        '302':
+          description: Redirect to dashboard or login page
+          headers:
+            Location:
+              description: Redirect URL
+              schema:
+                type: string
+                example: "/"
+
+components:
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - chatId
+        - messages
+      properties:
+        chatId:
+          type: string
+          format: uuid
+          description: Unique identifier for the chat session
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        messages:
+          type: array
+          description: Array of chat messages
+          items:
+            $ref: '#/components/schemas/Message'
+          minItems: 1
+
+    Message:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          enum:
+            - user
+            - assistant
+            - system
+          description: Role of the message sender
+        content:
+          type: string
+          description: Text content of the message
+          example: "What's the weather in Tokyo?"
+        parts:
+          type: array
+          description: Parts array for multipart messages (AI SDK format)
+          items:
+            $ref: '#/components/schemas/MessagePart'
+        files:
+          type: array
+          description: File attachments
+          items:
+            $ref: '#/components/schemas/FilePart'
+
+    MessagePart:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - text
+            - image
+          description: Type of message part
+        text:
+          type: string
+          description: Text content (when type is "text")
+        image:
+          type: string
+          description: Image URL or data URI (when type is "image")
+
+    FilePart:
+      type: object
+      required:
+        - type
+        - mediaType
+        - filename
+        - url
+      properties:
+        type:
+          type: string
+          enum:
+            - file
+          description: Always "file" for file attachments
+        mediaType:
+          type: string
+          description: MIME type of the file
+          example: "image/png"
+        filename:
+          type: string
+          description: Original filename
+          example: "screenshot.png"
+        url:
+          type: string
+          format: uri
+          description: Data URI or URL to the file
+          example: "data:image/png;base64,iVBORw0KGgo..."
+
+    UpdateTitleRequest:
+      type: object
+      required:
+        - chatId
+        - title
+      properties:
+        chatId:
+          type: string
+          format: uuid
+          description: Chat session ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: New title for the chat
+          example: "React Performance Discussion"
+
+    Chat:
+      type: object
+      description: Chat session
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier
+        user_id:
+          type: string
+          format: uuid
+          description: Owner's user ID
+        title:
+          type: string
+          description: Chat session title
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    StoredMessage:
+      type: object
+      description: Message stored in database
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier
+        chat_id:
+          type: string
+          format: uuid
+          description: Parent chat session ID
+        role:
+          type: string
+          enum:
+            - user
+            - assistant
+            - system
+          description: Message sender role
+        content:
+          oneOf:
+            - type: string
+            - type: object
+          description: Message content (string or JSON)
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+
+    WeatherToolResult:
+      type: object
+      description: Weather tool response
+      properties:
+        city:
+          type: string
+          example: "Tokyo"
+        temperature:
+          type: string
+          example: "32"
+
+    TaskToolResult:
+      type: object
+      description: Task tool response
+      properties:
+        title:
+          type: string
+          example: "Project Checklist"
+        tasks:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              text:
+                type: string
+              completed:
+                type: boolean
+
+    RecipeToolResult:
+      type: object
+      description: Recipe tool response
+      properties:
+        title:
+          type: string
+          example: "Classic Omelette"
+        description:
+          type: string
+        prepTime:
+          type: string
+          example: "5 minutes"
+        cookTime:
+          type: string
+          example: "3 minutes"
+        servings:
+          type: integer
+          example: 1
+        ingredients:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              amount:
+                type: string
+        instructions:
+          type: array
+          items:
+            type: string
+
+    Error:
+      type: object
+      description: Error response
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: sb-access-token
+      description: |
+        Supabase session cookie for authentication.
+        Automatically managed by the Supabase client SDK.
+
+tags:
+  - name: Chat
+    description: Chat message operations
+  - name: Authentication
+    description: OAuth and session management
